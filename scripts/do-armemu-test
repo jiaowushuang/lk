@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+export PROJECT=armemu-test
+
+if [ ! -f blk.bin ]; then
+	dd if=/dev/zero of=blk.bin bs=1024k count=16
+fi
+
+$DIR/make-parallel -C ../armemu &&
+$DIR/make-parallel &&
+(cd build-$PROJECT; ../../armemu/build-generic/armemu)

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+PROJECT=uzed-test
+
+$DIR/make-parallel $PROJECT &&
+xmd -tcl scripts/xmd.tcl $PROJECT

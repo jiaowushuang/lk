@@ -1,0 +1,1 @@
+armv8-a, armv8-r(64)

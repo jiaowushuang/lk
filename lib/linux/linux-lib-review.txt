@@ -1,0 +1,11 @@
+已存在的头文件
+types.h
+spinlock
+export
+atomic
+
+未匹配的东西
+atomic64
+L1_CACHE_BYTES
+L1_CACHE_SHIFT
+

@@ -1,0 +1,1 @@
+cortex-m, armv7-m(32), armv8-m(32)

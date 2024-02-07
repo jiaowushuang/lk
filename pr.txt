@@ -1,0 +1,3 @@
+1. panic (caller 0x4010341b): platform_fiq:515 unimplemented
+原因未知，对于虚拟机armv7-a/armv8-r都会出现，偶发
+2. 虚拟中断注入（新增）和物理中断（包括定时器）故障调试

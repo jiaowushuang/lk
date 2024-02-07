@@ -1,0 +1,76 @@
+/*
+ * Copyright (c) 2017 Linaro Limited.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#pragma once
+
+#include <mach/mpu/arm_mpu.h>
+
+#if !defined(ARM_ISA_ARMV8M)
+
+/* Flash Region Definitions */
+#if ROMSIZE <= 64*1024
+#define REGION_ROM_SIZE REGION_64K
+#elif ROMSIZE <= 128*1024
+#define REGION_ROM_SIZE REGION_128K
+#elif ROMSIZE <= 256*1024
+#define REGION_ROM_SIZE REGION_256K
+#elif ROMSIZE <= 512*1024
+#define REGION_ROM_SIZE REGION_512K
+#elif ROMSIZE <= 1024*1024
+#define REGION_ROM_SIZE REGION_1M
+#elif ROMSIZE <= 2048*1024
+#define REGION_ROM_SIZE REGION_2M
+#elif ROMSIZE <= 4096*1024
+#define REGION_ROM_SIZE REGION_4M
+#elif ROMSIZE <= 8192*1024
+#define REGION_ROM_SIZE REGION_8M
+#elif ROMSIZE <= 16384*1024
+#define REGION_ROM_SIZE REGION_16M
+#elif ROMSIZE <= 65536*1024
+#define REGION_ROM_SIZE REGION_64M
+#elif ROMSIZE <= 131072*1024
+#define REGION_ROM_SIZE REGION_128M
+#elif ROMSIZE <= 262144*1024
+#define REGION_ROM_SIZE REGION_256M
+#elif ROMSIZE <= 524288*1024
+#define REGION_ROM_SIZE REGION_512M
+#else
+#error "Unsupported flash size configuration"
+#endif
+
+/* SRAM Region Definitions */
+#if MEMSIZE <= 16*1024
+#define REGION_SRAM_SIZE REGION_16K
+#elif MEMSIZE <= 32*1024
+#define REGION_SRAM_SIZE REGION_32K
+#elif MEMSIZE <= 64*1024
+#define REGION_SRAM_SIZE REGION_64K
+#elif MEMSIZE <= 128*1024
+#define REGION_SRAM_SIZE REGION_128K
+#elif MEMSIZE <= 256*1024
+#define REGION_SRAM_SIZE REGION_256K
+#elif MEMSIZE <= 512*1024
+#define REGION_SRAM_SIZE REGION_512K
+#elif MEMSIZE <= 1024*1024
+#define REGION_SRAM_SIZE REGION_1M
+#elif MEMSIZE <= 2048*1024
+#define REGION_SRAM_SIZE REGION_2M
+#elif MEMSIZE <= 4096*1024
+#define REGION_SRAM_SIZE REGION_4M
+#elif MEMSIZE <= 8192*1024
+#define REGION_SRAM_SIZE REGION_8M
+#elif MEMSIZE <= 16384*1024
+#define REGION_SRAM_SIZE REGION_16M
+#elif MEMSIZE == 32768*1024
+#define REGION_SRAM_SIZE REGION_32M
+#elif MEMSIZE == 65536*1024
+#define REGION_SRAM_SIZE REGION_64M
+#else
+#error "Unsupported sram size configuration"
+#endif
+
+#endif /* ARM_ISA_ARMV8M */
+
+

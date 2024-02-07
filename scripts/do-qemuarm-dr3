@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# build-qemu-virt-arm64-test/kern.elf
+gdb-multiarch -ex "file build-qemu-virt-arm32-r52-test/kern.elf" \
+             -ex "target remote localhost:1234"

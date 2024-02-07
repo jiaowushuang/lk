@@ -1,0 +1,1 @@
+// a memory of ASynchronization buffer

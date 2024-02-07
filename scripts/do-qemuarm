@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+function HELP {
+    echo "help:"
+    echo "-b                : debug mode"
+    echo "-6                : 64bit arm"
+    echo "-3                : cortex-m3 based platform"
+    echo "-v                : boot kernel at EL2"
+    exho "-r				: cortex-r52 based platform"
+    echo "-m <memory in MB>"
+    echo "-s <number of cpus>"
+    echo
+    echo "-c                : cmpctmalloc instead of dlmalloc"
+    echo "-M                : miniheap instead of dlmalloc"
+    echo
+    echo "-d <disk image>   : a virtio disk device"
+    echo "-n                : a virtio network device"
+    echo "-t                : a virtio tap network device"
+    echo "-g                : a virtio display"
+    echo
+    echo "-h for help"
+    echo "all arguments after -- are passed to qemu directly"
+    exit 1
+}
+
+DO_NET=0
+DO_NET_TAP=0
+DO_DISK=0
+DO_DISK_IMAGE=""
+DO_64BIT=0
+DO_VIRT=0
+DO_CORTEX_M3=0
+DO_CORTEX_R52=0
+DO_DISPLAY=0
+DO_CMPCTMALLOC=0
+DO_MINIHEAP=0
+DO_DEBUG_MODE=0
+SMP=1
+MEMSIZE=512
+SUDO=""
+PROJECT=""
+
+while getopts cd:ghbm:Mnt36rvp:s: FLAG; do
+    case $FLAG in
+        c) DO_CMPCTMALLOC=1;;
+        d) DO_DISK=1; DISK_IMAGE=$OPTARG;;
+        g) DO_DISPLAY=1;;
+        M) DO_MINIHEAP=1;;
+        n) DO_NET=1;;
+        t) DO_NET_TAP=1;;
+        3) DO_CORTEX_M3=1;;
+        6) DO_64BIT=1;;
+        r) DO_CORTEX_R52=1;;
+        v) DO_VIRT=1;;
+        m) MEMSIZE=$OPTARG;;
+        s) SMP=$OPTARG;;
+        p) PROJECT=$OPTARG;;
+        b) DO_DEBUG_MODE=1;;
+        h) HELP;;
+        \?)
+            echo unrecognized option
+            HELP
+    esac
+done
+
+shift $((OPTIND-1))
+
+# pick the appropriate qemu and project
+if [ $DO_64BIT == 1 ]; then
+    QEMU="qemu-system-aarch64"
+    CPU="cortex-a53"
+    MACHINE="virt"
+    if [ $DO_VIRT == 1 ]; then
+      MACHINE+=",virtualization=on"
+    fi
+    _PROJECT="qemu-virt-arm64-test"
+elif [ $DO_CORTEX_M3 == 1 ]; then
+    QEMU="qemu-system-arm"
+    CPU="cortex-m3"
+    MACHINE="lm3s6965evb"
+    _PROJECT="lm3s6965evb-test"
+else
+    QEMU="qemu-system-arm"
+    CPU="cortex-a15"
+    MACHINE="virt"
+    _PROJECT="qemu-virt-arm32-test"
+
+    if [ $DO_CORTEX_R52 == 1 ]; then
+    	CPU="cortex-r52"
+        _PROJECT="qemu-virt-arm32-r52-test"
+    fi
+    
+    if [ $DO_VIRT == 1 ]; then
+      MACHINE+=",virtualization=on"
+    fi    
+
+    MACHINE+=",its=off"
+    MACHINE+=",highmem=on" # disable the high PCI ECAM, since we dont support LPAE to map it
+fi
+
+# allow overriding the project from the environment
+if [ "$PROJECT" == "" ]; then
+    PROJECT=$_PROJECT
+fi
+
+ARGS=" -cpu $CPU -m $MEMSIZE -smp $SMP -machine $MACHINE -kernel build-${PROJECT}/kern.elf"
+
+if (( $DO_DISK )); then
+    ARGS+=" -drive if=none,file=${DISK_IMAGE},id=blk,format=raw"
+    ARGS+=" -device virtio-blk-device,drive=blk"
+fi
+
+if (( $DO_NET )); then
+    ARGS+=" -netdev user,id=vmnic,hostname=qemu "
+    ARGS+=" -device virtio-net-device,netdev=vmnic"
+elif (( $DO_NET_TAP )); then
+    # quick note to enable tap interface
+    # IFNAME=qemu0
+    # BRIDGE=bridge0
+    # sudo tunctl -u $(whoami) -t ${IFNAME}
+    # sudo ifconfig ${IFNAME} up
+    # sudo ip link set ${IFNAME} master ${BRIDGE}
+    ARGS+=" -netdev tap,id=vmnic,ifname=qemu0,script=no,downscript=no"
+    ARGS+=" -device virtio-net-device,netdev=vmnic"
+    #SUDO="sudo "
+else
+    NO_NET_ARGS=" -net none"
+    ARGS+=$NO_NET_ARGS
+fi
+
+if (( $DO_DISPLAY )); then
+    ARGS+=" -device virtio-gpu-device -serial stdio"
+    ARGS+=" -device virtio-keyboard-device"
+    ARGS+=" -device virtio-mouse-device"
+else
+    ARGS+=" -nographic"
+fi
+
+if (( $DO_DEBUG_MODE )); then
+    ARGS+=" -s -S"
+fi
+
+MAKE_VARS=""
+
+if (( $DO_CMPCTMALLOC )); then
+    MAKE_VARS=HEAP_IMPLEMENTATION=cmpctmalloc
+elif (( $DO_MINIHEAP )); then
+    MAKE_VARS=HEAP_IMPLEMENTATION=miniheap
+fi
+
+$DIR/make-parallel $MAKE_VARS $PROJECT &&
+echo $SUDO $QEMU $ARGS $@ &&
+$SUDO $QEMU $ARGS $@

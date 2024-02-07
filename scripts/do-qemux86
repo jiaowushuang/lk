@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+function HELP {
+    echo "help:"
+    echo "-6                  : x86-64"
+    echo "-l                  : legacy mode build (386 emulated machine)"
+    echo "-m <memory in MB>"
+    echo "-s <number of cpus>"
+    echo
+    echo "-d <disk image>     : a virtio block device"
+    echo "-g                  : with graphics"
+    echo "-n                  : user mode networking, defaults to virtio-net-pci device"
+    echo "-N <network driver> : specify network driver (virtio-net-pci, e1000e, etc)"
+    echo "-t                  : use tap interface qemu0 for networking"
+    echo "-k                  : use KVM"
+    echo
+    echo "-h for help"
+    echo "all arguments after -- are passed to qemu directly"
+    exit 1
+}
+
+DO_64BIT=0
+DO_LEGACY=0
+DO_GRAPHICS=0
+DO_KVM=0
+DO_DISK=0
+DISK_IMAGE=""
+DO_NET=0
+DO_NET_TAP=0
+NETDEV=e1000e
+MEMSIZE=0
+SMP=1
+SUDO=""
+MAKE_VARS=""
+
+while getopts 6d:gklm:nN:s:th FLAG; do
+    case $FLAG in
+        6) DO_64BIT=1;;
+        d) DO_DISK=1; DISK_IMAGE=$OPTARG;;
+        g) DO_GRAPHICS=1;;
+        k) DO_KVM=1;;
+        l) DO_LEGACY=1;;
+        m) MEMSIZE=$OPTARG;;
+        n) DO_NET=1;;
+        t) DO_NET_TAP=1;;
+        N) NETDEV=$OPTARG;;
+        s) SMP=$OPTARG;;
+        h) HELP;;
+        \?)
+            echo unrecognized option $OPTARG
+            HELP
+    esac
+done
+
+shift $((OPTIND-1))
+
+# pick the appropriate qemu and project
+if (( $DO_64BIT )); then
+    QEMU="qemu-system-x86_64"
+    PROJECT="pc-x86-64-test"
+    CPU=max
+    MACHINE=q35
+elif (( $DO_LEGACY )); then
+    QEMU="qemu-system-i386"
+    PROJECT="pc-x86-legacy-test"
+    CPU=486
+    MACHINE=isapc
+else
+    QEMU="qemu-system-i386"
+    PROJECT="pc-x86-test"
+    CPU=max
+    MACHINE=pc
+fi
+
+if (( $DO_LEGACY )); then
+    if (( ! $MEMSIZE )); then
+        MEMSIZE=4
+    fi
+else
+    if (( ! $MEMSIZE )); then
+        MEMSIZE=512
+    fi
+fi
+
+ARGS=""
+if (( $DO_KVM )); then
+    ARGS+=" -enable-kvm -cpu host"
+else
+    ARGS+=" -cpu $CPU"
+fi
+ARGS+=" -m $MEMSIZE -smp $SMP -machine $MACHINE -kernel build-${PROJECT}/kern.elf"
+
+ARGS+=" -device isa-debug-exit,iobase=0xf4,iosize=0x04"
+# Override the SeaBIOS serial port to keep it from outputting
+# a terminal reset on start.
+ARGS+=" -fw_cfg name=etc/sercon-port,string=0"
+
+if (( $DO_GRAPHICS )); then
+    ARGS+=" -serial stdio -vga std"
+    if (( ! $DO_LEGACY )); then
+        # add a couple of virtio devices for good measure
+        ARGS+=" -device virtio-keyboard-pci"
+        ARGS+=" -device virtio-mouse-pci"
+    fi
+else
+    ARGS+=" -nographic"
+fi
+
+if (( $DO_DISK )); then
+    if (( ! $DO_LEGACY )); then
+        ARGS+=" -drive if=none,file=${DISK_IMAGE},id=blk,discard=on -device virtio-blk-pci,drive=blk,discard=on"
+    else
+        ARGS+=" -hda ${DISK_IMAGE}"
+    fi
+fi
+if (( $DO_NET )); then
+    if (( ! $DO_LEGACY )); then
+        if (( ! $DO_NET_TAP )); then
+            ARGS+=" -netdev user,id=vmnic,hostname=qemu"
+        else
+            # quick note to enable tap interface
+            # IFNAME=qemu0
+            # BRIDGE=bridge0
+            # sudo tunctl -u $(whoami) -t ${IFNAME}
+            # sudo ifconfig ${IFNAME} up
+            # sudo ip link set ${IFNAME} master ${BRIDGE}
+            ARGS+=" -netdev tap,id=vmnic,ifname=qemu0,script=no,downscript=no"
+            #SUDO="sudo"
+        fi
+        ARGS+=" -device $NETDEV,netdev=vmnic"
+    else
+        echo "implement legacy + network config"
+        exit 1
+    fi
+else
+    ARGS+=" -net none"
+fi
+
+$DIR/make-parallel $MAKE_VARS $PROJECT &&
+echo $SUDO $QEMU $ARGS $@ &&
+$SUDO $QEMU $ARGS $@
+

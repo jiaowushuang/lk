@@ -1,0 +1,58 @@
+ 
+config SUPERVISER_SUPPORT
+    bool "supervisor kernel"
+    help 
+        kernel type
+
+config HYPERVISOR_SUPPORT
+    bool "hypervisor kernel"
+    help 
+        kernel type
+
+config MONITOR_SUPPORT
+    bool "monitor kernel"
+    help 
+        kernel type
+
+config ADMINISTOR_SUPPORT
+    bool "administor kernel"
+    help 
+        kernel type
+
+config SMP_SUPPORT
+    bool "smp support"
+    help
+        support smp mode
+
+config MAX_NUM_NODES
+    int "smp core numbers"
+    help
+        0-N
+
+config ARCH_ZYNQMP
+    bool "zynqmp mach"
+    help
+        arch mach
+
+config SOC_AM33XX
+    bool "am33xx mach"
+    help
+        arch mach
+
+config MAX_DOMAIN_PARTITIONS 
+    int "partition number"
+    help
+        mpu partition
+
+config MULTIPARTITIONING
+    bool "multi-partition enable"
+    help
+        mpu multi-partition     
+
+config RTOSPARTITION
+    bool "multi-partition enable for RTOS"
+
+config APPPARTITION
+    bool "multi-partition enable for APP"
+
+source "arch/arm/mach/mpu/Kconfig"

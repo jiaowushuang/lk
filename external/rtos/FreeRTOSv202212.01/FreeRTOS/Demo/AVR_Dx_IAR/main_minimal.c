@@ -1,0 +1,174 @@
+/*
+ * FreeRTOS V202212.01
+ * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * https://www.FreeRTOS.org
+ * https://github.com/FreeRTOS
+ *
+ */
+
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include "PollQ.h"
+#include "integer.h"
+#include "serial.h"
+#include "comtest.h"
+#include "partest.h"
+#include "regtest.h"
+
+/* Priority definitions for most of the tasks in the demo application.  Some
+tasks just use the idle priority. */
+#define mainCOM_TEST_PRIORITY       ( tskIDLE_PRIORITY + 2 )
+#define mainQUEUE_POLL_PRIORITY     ( tskIDLE_PRIORITY + 2 )
+#define mainCHECK_TASK_PRIORITY     ( tskIDLE_PRIORITY + 3 )
+
+/* Baud rate used by the serial port tasks. */
+#define mainCOM_TEST_BAUD_RATE      ( ( unsigned long ) 9600 )
+
+/* LED used by the serial port tasks.  This is toggled on each character Tx,
+and mainCOM_TEST_LED + 1 is toggles on each character Rx. */
+#define mainCOM_TEST_LED            ( 7 )
+
+/* LED that is toggled by the check task.  The check task periodically checks
+that all the other tasks are operating without error.  If no errors are found
+the LED is toggled.  If an error is found at any time the LED is never toggles
+again. */
+#define mainCHECK_TASK_LED          ( 6 )
+
+/* The period between executions of the check task. */
+#define mainCHECK_PERIOD            ( ( TickType_t ) 1000 / portTICK_PERIOD_MS )
+
+/* An address in the EEPROM used to count resets.  This is used to check that
+the demo application is not unexpectedly resetting. */
+#define mainRESET_COUNT_ADDRESS     ( 0x1400 )
+
+/*
+ * The task function for the "Check" task.
+ */
+static void vErrorChecks( void *pvParameters );
+
+/*
+ * Checks the unique counts of other tasks to ensure they are still operational.
+ * Flashes an LED if everything is okay.
+ */
+static void prvCheckOtherTasksAreStillRunning( void );
+
+/*
+ * Called on boot to increment a count stored in the EEPROM.  This is used to
+ * ensure the CPU does not reset unexpectedly.
+ */
+static void prvIncrementResetCount( void );
+
+void main_minimal( void )
+{
+    prvIncrementResetCount();
+
+    /* Create the standard demo tasks. */
+    vStartIntegerMathTasks( tskIDLE_PRIORITY );
+    vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
+    vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
+    vStartRegTestTasks();
+
+    /* Create the tasks defined within this file. */
+    xTaskCreate( vErrorChecks, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+
+    /* In this port, to use preemptive scheduler define configUSE_PREEMPTION
+    as 1 in portmacro.h.  To use the cooperative scheduler define
+    configUSE_PREEMPTION as 0. */
+    vTaskStartScheduler();
+}
+
+void init_minimal( void )
+{
+    /* Configure UART pins: PC1 Rx, PC0 Tx */
+    PORTC.DIR &= ~PIN0_bm;
+    PORTC.DIR |= PIN1_bm;
+
+    vParTestInitialise();
+}
+
+static void vErrorChecks( void *pvParameters )
+{
+static volatile unsigned long ulDummyVariable = 3UL;
+
+    /* The parameters are not used. */
+    ( void ) pvParameters;
+
+    /* Cycle for ever, delaying then checking all the other tasks are still
+    operating without error. */
+    for( ;; )
+    {
+        vTaskDelay( mainCHECK_PERIOD );
+
+        /* Perform a bit of 32bit maths to ensure the registers used by the
+        integer tasks get some exercise.  The result here is not important -
+        see the demo application documentation for more info. */
+        ulDummyVariable *= 3;
+
+        prvCheckOtherTasksAreStillRunning();
+    }
+}
+/*-----------------------------------------------------------*/
+
+static void prvCheckOtherTasksAreStillRunning( void )
+{
+static portBASE_TYPE xErrorHasOccurred = pdFALSE;
+
+    if( xAreIntegerMathsTaskStillRunning() != pdTRUE )
+    {
+        xErrorHasOccurred = pdTRUE;
+    }
+
+    if( xAreComTestTasksStillRunning() != pdTRUE )
+    {
+        xErrorHasOccurred = pdTRUE;
+    }
+
+    if( xArePollingQueuesStillRunning() != pdTRUE )
+    {
+        xErrorHasOccurred = pdTRUE;
+    }
+
+    if( xAreRegTestTasksStillRunning() != pdTRUE )
+    {
+        xErrorHasOccurred = pdTRUE;
+    }
+
+    if( xErrorHasOccurred == pdFALSE )
+    {
+        /* Toggle the LED if everything is okay so we know if an error occurs even if not
+        using console IO. */
+        vParTestToggleLED( mainCHECK_TASK_LED );
+    }
+}
+/*-----------------------------------------------------------*/
+
+static void prvIncrementResetCount( void )
+{
+static unsigned char __eeprom ucResetCount @ mainRESET_COUNT_ADDRESS;
+
+    ucResetCount++;
+}
+/*-----------------------------------------------------------*/
+
+void vApplicationIdleHook( void )
+{
+}

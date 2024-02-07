@@ -1,0 +1,1 @@
+cortex-a/r, armv8-a(64/32), armv8-r(64)

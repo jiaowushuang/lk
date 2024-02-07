@@ -1,0 +1,1 @@
+// Heterogeneous core, in different chip, such as cpu and gpu

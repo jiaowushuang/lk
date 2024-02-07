@@ -1,0 +1,1 @@
+// one os can run in many cores of same chip

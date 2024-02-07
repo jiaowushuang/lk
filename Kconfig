@@ -1,0 +1,17 @@
+mainmenu "Neuro Kernel Configuration"
+
+menu "ARCH Configuration"
+source "arch/Kconfig"
+endmenu
+
+menu "Build and Link Features"
+config TOOLCHAIN_GCC
+    bool "gcc"
+    help
+        gcc
+
+config TOOLCHAIN_LLVM
+    bool "llvm"
+    help
+        llvm
+endmenu

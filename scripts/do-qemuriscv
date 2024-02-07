@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+function HELP {
+    echo "help:"
+    echo "-6                : 64bit"
+    echo "-S                : supervisor mode (using OpenSBI)"
+    echo "                    currently only works in 64bit mode"
+    echo "-e                : sifive e platform"
+    echo "-u                : sifive u platform"
+    echo "-m <memory in MB>"
+    echo "-s <number of cpus>"
+    echo
+    echo "-c                : cmpctmalloc instead of dlmalloc"
+    echo "-M                : miniheap instead of dlmalloc"
+    echo
+    echo "-d <disk image>   : a virtio block device"
+    echo "-n                : a virtio network device"
+    echo "-t                : a virtio tap network device"
+    echo "-g                : a virtio display"
+    echo
+    echo "-h for help"
+    echo "all arguments after -- are passed to qemu directly"
+    exit 1
+}
+
+DO_NET=0
+DO_NET_TAP=0
+DO_DISK=0
+DO_DISK_IMAGE=""
+DO_64BIT=0
+DO_EMBEDDED=0
+DO_UNLEASHED=0
+DO_DISPLAY=0
+DO_CMPCTMALLOC=0
+DO_MINIHEAP=0
+DO_SUPERVISOR=0
+SMP=1
+MEMSIZE=512
+SUDO=""
+PROJECT=""
+
+while getopts cd:ghm:Mmnteu6p:s:S FLAG; do
+    case $FLAG in
+        c) DO_CMPCTMALLOC=1;;
+        d) DO_DISK=1; DISK_IMAGE=$OPTARG;;
+        g) DO_DISPLAY=1;;
+        M) DO_MINIHEAP=1;;
+        n) DO_NET=1;;
+        t) DO_NET_TAP=1;;
+        e) DO_EMBEDDED=1;;
+        u) DO_UNLEASHED=1;;
+        6) DO_64BIT=1;;
+        m) MEMSIZE=$OPTARG;;
+        s) SMP=$OPTARG;;
+        S) DO_SUPERVISOR=1;;
+        p) PROJECT=$OPTARG;;
+        h) HELP;;
+        \?)
+            echo unrecognized option
+            HELP
+    esac
+done
+
+shift $((OPTIND-1))
+
+CPU=""
+BIOS=""
+
+if (( $DO_UNLEASHED == 1 )); then
+    QEMU="qemu-system-riscv64"
+    MACHINE="sifive_u"
+    _PROJECT="qemu-sifive-u-test"
+    if (( $SMP == 1 )); then
+        SMP=2
+    fi
+    if (( $MEMSIZE == 512 )); then
+        MEMSIZE=8192
+    fi
+elif (( $DO_EMBEDDED == 1 )); then
+    QEMU="qemu-system-riscv32"
+    MACHINE="sifive_e"
+    _PROJECT="sifive-e-test"
+    MEMSIZE=0
+    SMP=0
+elif (( $DO_64BIT )); then
+    QEMU="qemu-system-riscv64"
+    CPU="rv64"
+    MACHINE="virt"
+    if (( $DO_SUPERVISOR )); then
+        _PROJECT="qemu-virt-riscv64-supervisor-test"
+        BIOS="default"
+    else
+        _PROJECT="qemu-virt-riscv64-test"
+        BIOS="none"
+    fi
+else
+    QEMU="qemu-system-riscv32"
+    CPU="rv32"
+    MACHINE="virt"
+    _PROJECT="qemu-virt-riscv32-test"
+    BIOS="none"
+fi
+if [[ -z "$PROJECT" ]]; then
+    PROJECT=$_PROJECT
+fi
+
+# construct a list of args based on previous variables
+ARGS=" -machine $MACHINE"
+#ARGS+=",dumpdtb=riscv.dtb" # uncheck this to get a binary dump of the device tree for this config
+ARGS+=" -kernel build-${PROJECT}/kern.elf"
+if [[ ! -z "$CPU" ]]; then
+    ARGS+=" -cpu $CPU"
+fi
+if (( $MEMSIZE )); then
+    ARGS+=" -m $MEMSIZE"
+fi
+if (( $SMP )); then
+    ARGS+=" -smp $SMP"
+fi
+if [[ ! -z "$BIOS" ]]; then
+    ARGS+=" -bios $BIOS"
+fi
+if (( $DO_DISK )); then
+    ARGS+=" -drive if=none,file=${DISK_IMAGE},id=blk,format=raw"
+    ARGS+=" -device virtio-blk-device,drive=blk"
+fi
+if (( $DO_NET )); then
+    ARGS+=" -netdev user,id=vmnic,hostname=qemu"
+    ARGS+=" -device virtio-net-device,netdev=vmnic"
+fi
+if (( $DO_NET_TAP )); then
+    # quick note to enable tap interface
+    # IFNAME=qemu0
+    # BRIDGE=bridge0
+    # sudo tunctl -u $(whoami) -t ${IFNAME}
+    # sudo ifconfig ${IFNAME} up
+    # sudo ip link set ${IFNAME} master ${BRIDGE}
+    ARGS+=" -netdev tap,id=vmnic,ifname=qemu0,script=no,downscript=no"
+    ARGS+=" -device virtio-net-device,netdev=vmnic"
+    #SUDO="sudo "
+fi
+if (( $DO_DISPLAY )); then
+    ARGS+=" -device virtio-gpu-device -serial stdio"
+    ARGS+=" -device virtio-keyboard-device"
+    ARGS+=" -device virtio-mouse-device"
+else
+    ARGS+=" -nographic"
+fi
+
+MAKE_VARS=""
+
+if (( $DO_CMPCTMALLOC )); then
+    MAKE_VARS=HEAP_IMPLEMENTATION=cmpctmalloc
+elif (( $DO_MINIHEAP )); then
+    MAKE_VARS=HEAP_IMPLEMENTATION=miniheap
+fi
+
+$DIR/make-parallel $MAKE_VARS $PROJECT &&
+echo $SUDO $QEMU $ARGS $@ &&
+$SUDO $QEMU $ARGS $@
