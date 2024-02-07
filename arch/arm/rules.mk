@@ -33,7 +33,7 @@ GLOBAL_DEFINES += \
 HANDLED_CORE := true
 ENABLE_THUMB := true
 SUBARCH := arm-m
-ENBALE_MPU := true
+ENABLE_MPU := true
 endif
 ifeq ($(ARM_CPU),cortex-m3)
 GLOBAL_DEFINES += \
@@ -45,7 +45,7 @@ GLOBAL_DEFINES += \
 HANDLED_CORE := true
 ENABLE_THUMB := true
 SUBARCH := arm-m
-ENBALE_MPU := true
+ENABLE_MPU := true
 endif
 ifeq ($(ARM_CPU),cortex-m4)
 GLOBAL_DEFINES += \
@@ -57,7 +57,7 @@ GLOBAL_DEFINES += \
 HANDLED_CORE := true
 ENABLE_THUMB := true
 SUBARCH := arm-m
-ENBALE_MPU := true
+ENABLE_MPU := true
 endif
 ifeq ($(ARM_CPU),cortex-m4f)
 GLOBAL_DEFINES += \
@@ -72,7 +72,7 @@ GLOBAL_DEFINES += \
 HANDLED_CORE := true
 ENABLE_THUMB := true
 SUBARCH := arm-m
-ENBALE_MPU := true
+ENABLE_MPU := true
 endif
 ifeq ($(ARM_CPU),cortex-m55)
 GLOBAL_DEFINES += \
@@ -85,7 +85,7 @@ GLOBAL_DEFINES += \
 HANDLED_CORE := true
 ENABLE_THUMB := true
 SUBARCH := arm-m
-ENBALE_MPU := true
+ENABLE_MPU := true
 endif
 ifeq ($(ARM_CPU),cortex-m7)
 GLOBAL_DEFINES += \
@@ -98,7 +98,7 @@ GLOBAL_DEFINES += \
 HANDLED_CORE := true
 ENABLE_THUMB := true
 SUBARCH := arm-m
-ENBALE_MPU := true
+ENABLE_MPU := true
 endif
 ifeq ($(ARM_CPU),cortex-m7-fpu-sp-d16)
 GLOBAL_DEFINES += \
@@ -113,7 +113,7 @@ GLOBAL_DEFINES += \
 HANDLED_CORE := true
 ENABLE_THUMB := true
 SUBARCH := arm-m
-ENBALE_MPU := true
+ENABLE_MPU := true
 endif
 ifeq ($(ARM_CPU),cortex-a7)
 GLOBAL_DEFINES += \
@@ -233,7 +233,7 @@ GLOBAL_DEFINES += \
 	ARM_WITH_HYP=1
 # ARM_WITH_VFP=1
 HANDLED_CORE := true
-ENBALE_MPU := true
+ENABLE_MPU := true
 endif
 ifeq ($(ARM_CPU),armemu)
 # flavor of emulated cpu by the armemu project
@@ -281,7 +281,7 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/virt/exceptions.S \
 	$(LOCAL_DIR)/virt/vcpu.c
 
-ifeq (false,$(call TOBOOL,$(ENBALE_MPU)))
+ifeq (false,$(call TOBOOL,$(ENABLE_MPU)))
 MODULE_SRCS += \
 	$(LOCAL_DIR)/virt/mmu.c \
 	$(LOCAL_DIR)/virt/usercopy.c
@@ -292,12 +292,13 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/arm/start.S \
 	$(LOCAL_DIR)/arm/exceptions.S
 
-ifeq (false,$(call TOBOOL,$(ENBALE_MPU)))
-MODULE_SRCS += \	
+ifeq (false,$(call TOBOOL,$(ENABLE_MPU)))
+MODULE_SRCS += \
 	$(LOCAL_DIR)/arm/mmu.c \
 	$(LOCAL_DIR)/arm/usercopy.S
 endif
 endif
+
 
 MODULE_ARM_OVERRIDE_SRCS := \
 	$(LOCAL_DIR)/arm/arch.c
@@ -328,7 +329,7 @@ GLOBAL_DEFINES += \
     USER_ASPACE_SIZE=0xffffffff \
     WITH_HYPER_MODE=1
 
-ifeq (true,$(call TOBOOL,$(ENBALE_MPU)))
+ifeq (true,$(call TOBOOL,$(ENABLE_MPU)))
 KERNEL_BASE ?= $(MEMBASE)
 KERNEL_MEMSIZE := 0x04000000
 # guest configuration
@@ -361,7 +362,7 @@ else
 # for arm, have the kernel occupy the entire top 3GB of virtual space,
 # but put the kernel itself at 0x80000000.
 # this leaves 0x40000000 - 0x80000000 open for kernel space to use.
-ifeq (true,$(call TOBOOL,$(ENBALE_MPU)))
+ifeq (true,$(call TOBOOL,$(ENABLE_MPU)))
 KERNEL_BASE ?= $(MEMBASE)
 KERNEL_MEMSIZE := 0x04000000
 else
@@ -431,7 +432,7 @@ ARCH_OPTFLAGS := -Os
 WITH_LINKER_GC ?= 1
 endif
 
-ifeq (true,$(call TOBOOL,$(ENBALE_MPU)))
+ifeq (true,$(call TOBOOL,$(ENABLE_MPU)))
 WITH_KERNEL_VM := 0
 
 MODULE_SRCS += \
@@ -461,8 +462,8 @@ GLOBAL_INCLUDES += \
 	$(LOCAL_DIR)/mach/mpu/cortex_a_r
 endif
 
-ENBALE_MPU_NULLPTRDEBUG := false
-ifeq (true,$(call TOBOOL,$(ENBALE_MPU_NULLPTRDEBUG)))
+ENABLE_MPU_NULLPTRDEBUG := false
+ifeq (true,$(call TOBOOL,$(ENABLE_MPU_NULLPTRDEBUG)))
 GLOBAL_INCLUDES += \
 	ARM_NULL_POINTER_EXCEPTION_DETECTION_MPU=1 \
 	ARM_CORTEX_M_NULL_POINTER_EXCEPTION_PAGE_SIZE=1024
@@ -479,6 +480,16 @@ ifeq (true,$(call TOBOOL,$(WITH_HYPER_MODE)))
 GLOBAL_DEFINES += \
 	WITH_HYPER_MODE=1
 endif
+endif
+
+ifeq (true,$(call TOBOOL,$(WITH_SUPER_MODE)))
+GLOBAL_DEFINES += \
+	WITH_SUPER_MODE=1
+endif
+
+ifeq (true,$(call TOBOOL,$(WITH_AUX_HYPER_MODE)))
+GLOBAL_DEFINES += \
+	WITH_AUX_HYPER_MODE=1
 endif
 
 

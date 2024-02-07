@@ -12,7 +12,11 @@ GUEST_TASKS_OBJ := $(BUILDDIR)/guest_tasks.o
 
 GENERATED += $(GUEST_TASKS_BIN) $(GUEST_TASKS_OBJ)
 
+ifeq (true,$(call TOBOOL,$(ENABLE_MPU)))
 ALLGUEST_TASK_OBJS := external/image/kern.bin
+else
+ALLGUEST_TASK_OBJS := external/image/kern-a.bin
+endif
 
 $(GUEST_TASKS_BIN): $(ALLGUEST_TASK_OBJS)
 	@$(MKDIR)

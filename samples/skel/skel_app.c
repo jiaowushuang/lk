@@ -22,7 +22,7 @@
 
 int main(void)
 {
-	//printf("Hello world from skeleton app\n");
+	printf("Hello world from skeleton app\n");
 
 	return 0;
 }

@@ -31,13 +31,13 @@ int main(void)
 {
 	int i;
 	while (true) {
-		//printf("Hello world from timer app 1\n");
+		printf("Hello world from timer app 1\n");
 		for (i = 0; i < 100000000; i++)
 			nop();
-		//printf("Hello world from timer app 2\n");
+		printf("Hello world from timer app 2\n");
 		for (i = 0; i < 1000; i++)
 			compat_nanosleep(0, 0, 1000 * 1000);
-		//printf("Hello world from timer app 3\n");
+		printf("Hello world from timer app 3\n");
 		compat_nanosleep(0, 0, 10ULL * 1000 * 1000 * 1000);
 	}
 	return 0;

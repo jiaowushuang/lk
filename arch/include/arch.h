@@ -36,5 +36,6 @@ __END_CDECLS
 
 /* arch specific bits */
 #include <arch/defines.h>
+#ifndef WITH_AUX_HYPER_MODE
 #include <arch/arch_helpers.h>
-
+#endif

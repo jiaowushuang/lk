@@ -13,8 +13,9 @@
 #include <kern/compiler.h>
 #include <kern/reg.h>
 #include <arch/arm.h>
+#ifndef WITH_AUX_HYPER_MODE
 #include <arch/arch_helpers.h>
-
+#endif
 #if ARM_ISA_ARMV7M
 #include <arch/arm/cm.h>
 #endif

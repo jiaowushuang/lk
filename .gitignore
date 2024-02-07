@@ -1,6 +1,7 @@
 # Prerequisites
 *.d
-
+build-*
+.config*
 # Object files
 *.o
 *.ko

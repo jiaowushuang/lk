@@ -1,7 +1,7 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
 MODULE := $(LOCAL_DIR)
-ENBALE_MPU :=
+ENABLE_MPU :=
 
 GLOBAL_DEFINES += \
 	ARM64_CPU_$(ARM_CPU)=1 \
@@ -135,7 +135,7 @@ MODULE_DEPS += tools/gen-symoff
 
 MODULE_SRCDEPS += $(SYMOFFSET_SYM_H) $(SYMOFFSET_OFF_H)
 
-ifeq (true,$(call TOBOOL,$(ENBALE_MPU)))
+ifeq (true,$(call TOBOOL,$(ENABLE_MPU)))
 
 MODULE_SRCS += \
 	$(LOCAL_DIR)/mach/mpu/arm_mpu.c \
@@ -148,6 +148,11 @@ GLOBAL_DEFINES += \
 GLOBAL_INCLUDES += \
 	$(LOCAL_DIR)/mach/include
 
+endif
+
+ifeq (true,$(call TOBOOL,$(WITH_SUPER_MODE)))
+GLOBAL_DEFINES += \
+	WITH_SUPER_MODE=1
 endif
 
 # potentially generated files that should be cleaned out with clean make rule
