@@ -39,7 +39,9 @@ Newlk”粘性或高伸缩性“的原因在于，对上提供一个资源视图
 
 Newlk别名学徒（apprentice），意为在学习中成长的内核
 
-Newlk可以与UML(User Mode Linux)/LKL(Linux Kernel Library)/...进行合作，作为linux兼容层的一种解决方案；同时，也可以引入了Linux的一些库，包括锁以及基本数据结构，维测库，做成可以迁移的库
+Newlk可以与UML(User Mode Linux)/LKL(Linux Kernel Library)/libos...进行合作，作为linux兼容层的一种解决方案；同时，也可以引入了Linux的一些库，包括锁以及基本数据结构，维测库，做成可以迁移的库
+也可以参考embox方案
+
 
 目前验证的配置（QEMU）：
 HYPER   KERNEL 	USER
