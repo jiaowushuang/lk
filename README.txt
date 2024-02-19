@@ -66,7 +66,7 @@ HYPER
 1. -v
 
 配置
-1. make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32r]-test menuconfig
+1. make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test menuconfig
 2. env_inc.mk, WITH_SUPER_MODE := true
 3. env_inc.mk, WITH_HYPER_MODE := true
 4. USER_TASK_ENABLE := true
@@ -77,22 +77,26 @@ HYPER
 HYPER - OK
 32
 命令行KERNEL 1|4，HYPER 1
-配置1 DEFAULT_PROJECT=qemu-virt-arm32[arm32r]; cortex-r 配置mpu使能（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, MPU ARMV8R, ARM MPU Support），并且qemu需要改写成支持cortex-r52
+配置1 DEFAULT_PROJECT=qemu-virt-arm32[arm32-r52]; cortex-r 配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, MPU ARMV8R, ARM MPU Support），并且qemu需要改写成支持cortex-r52
 配置3
 
 AUX-HYPER - OK
 32
 命令行KERNEL 2
-配置1 DEFAULT_PROJECT=qemu-virt-arm32, 配置mpu使能（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, ARM MPU Support）
+配置1 DEFAULT_PROJECT=qemu-virt-arm32, 配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, ARM MPU Support）
 配置6
 
-
-
-KERNEL 	USER - ?
+KERNEL 	USER - OK
 32	32
 命令行KERNEL 1|2|4
-配置1 DEFAULT_PROJECT=qemu-virt-arm32[arm32r] cortex-m/r 可以选择配置mpu使能（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, ARM MPU Support）
+配置1 DEFAULT_PROJECT=qemu-virt-arm32
 配置2/4/5
+cortex-m 默认配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for APP, MPU ARM, ARM MPU Support）
+当不使用MPU时，需要在arch/arm/rules.mk中配置ENABLE_MPU:=false
+cortex-m目前仅支持KERNEL32，使用配置2
+cortex-r目前仅验证r52，且必须配置mpu使能
+默认配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for APP, MPU ARM, MPU ARMV8R, ARM MPU Support）
+cortex-r目前仅支持KERNEL32，使用配置2
 
 64	64 - OK
 命令行KERNEL 3
