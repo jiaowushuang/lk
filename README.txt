@@ -91,7 +91,7 @@ AUX-HYPER - OK
 KERNEL 	USER - ?
 32	32
 命令行KERNEL 1|2|4
-配置1 DEFAULT_PROJECT=qemu-virt-arm32[arm32r]
+配置1 DEFAULT_PROJECT=qemu-virt-arm32[arm32r] cortex-m/r 可以选择配置mpu使能（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, ARM MPU Support）
 配置2/4/5
 
 64	64 - OK
