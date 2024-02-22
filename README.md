@@ -65,7 +65,7 @@ HYPER   KERNEL 	USER
 1. Ubuntu20.04/22.04
 2. 安装通用库：sudo apt install git binutils build-essential libssl-dev libncurses-dev libconfuse-dev libtool f2fs-tools device-tree-compiler python3 python3-dev python3-pip python-is-python3
 3. 安装py库：pip3 install --user ply jinja2 Kconfiglib
-4. 安装QEMU：sudo apt install qemu-system-arm qemu-system-aarch64 *qemu-system-arm for cortex-r52 需要更新QEMU代码，源码编译，patch at 'external/qemu-cr52/cortex-r52-support.patch'*
+4. 安装QEMU：sudo apt install qemu-system-arm qemu-system-aarch64 *qemu-system-arm for cortex-r52 需要更新QEMU代码为v8.2.0，源码编译，patch at 'external/qemu-cr52/cortex-r52-support.patch'*
 5. 安装交叉编译器(arm32)：sudo apt install gcc-arm-none-eabi 或是 [gcc-arm-none-eabi](https://developer.arm.com/downloads/-/gnu-a)
 6. 安装交叉编译器(arm64)：[aarch64-none-elf](https://developer.arm.com/downloads/-/gnu-a)
 
