@@ -1,0 +1,26 @@
+diff --git a/hw/arm/virt.c b/hw/arm/virt.c
+index be2856c01..20f3fa0b4 100644
+--- a/hw/arm/virt.c
++++ b/hw/arm/virt.c
+@@ -217,6 +217,7 @@ static const char *valid_cpus[] = {
+     ARM_CPU_TYPE_NAME("neoverse-n1"),
+     ARM_CPU_TYPE_NAME("neoverse-v1"),
+     ARM_CPU_TYPE_NAME("neoverse-n2"),
++    ARM_CPU_TYPE_NAME("cortex-r52"),
+ #endif
+     ARM_CPU_TYPE_NAME("cortex-a53"),
+     ARM_CPU_TYPE_NAME("cortex-a57"),
+diff --git a/target/arm/cpu.c b/target/arm/cpu.c
+index efb22a87f..cd944cbbb 100644
+--- a/target/arm/cpu.c
++++ b/target/arm/cpu.c
+@@ -2092,6 +2092,9 @@ static void arm_cpu_realizefn(DeviceState *dev, Error **errp)
+          */
+         pagebits = 10;
+     }
++    if (arm_feature(env, ARM_FEATURE_V8)) {
++        pagebits = 12;
++    }
+     if (!set_preferred_target_page_bits(pagebits)) {
+         /* This can only ever happen for hotplugging a CPU, or if
+          * the board code incorrectly creates a CPU which it has
