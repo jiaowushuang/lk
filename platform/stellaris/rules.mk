@@ -31,6 +31,9 @@ ifeq ($(MEMSIZE),)
 $(error need to define MEMSIZE)
 endif
 
+KERNEL_ROMSIZE := 0x20000
+KERNEL_MEMSIZE := $(MEMSIZE)
+
 MODULE_SRCS += \
 	$(LOCAL_DIR)/debug.c \
 	$(LOCAL_DIR)/gpio.c \

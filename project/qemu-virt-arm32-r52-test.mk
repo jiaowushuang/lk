@@ -5,7 +5,6 @@ MODULES += \
 ifeq (true,$(call TOBOOL,$(WITH_AUX_HYPER_MODE)))
 MODULES += \
 	root/services/partition
-	
 endif
 
 ifeq (true,$(call TOBOOL,$(WITH_HYPER_MODE)))

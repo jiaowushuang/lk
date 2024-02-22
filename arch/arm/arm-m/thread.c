@@ -181,12 +181,15 @@ static void svc_handler(struct arm_cm_exception_frame_short *frame) {
             );
 		    break;
     case 1: {
+#ifdef WITH_AUX_HYPER_MODE        
         arch_disable_ints();
 	    void *(*curr_thx_func)(void) = app_info_header[6];
 	    void *curr_thx = curr_thx_func();
 	    struct thread *curr = get_current_thread();
 	    LTRACEF("%lx, %lx\n", curr_thx_func, curr_thx);
 	    arch_context_enter_pls(curr, curr_thx);
+#endif
+   
 	    break;
     }
 	}

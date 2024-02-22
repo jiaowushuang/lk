@@ -1,8 +1,12 @@
 MODULES += \
 
 MODULES += \
-	root/services/partition \
 	root/services/shell
+
+ifeq (true,$(call TOBOOL,$(ENABLE_MPU)))
+MODULES += \
+	root/services/partition
+endif
 
 include project/virtual/fs.mk
 # include project/virtual/test.mk
