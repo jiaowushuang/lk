@@ -49,7 +49,8 @@ LLM可以收集数据，制定决策，反馈决策，这首先对于具备大�
 
 LLM全局环境可以采用物理环境或是虚拟环境，CPU或是虚拟机virt（例如bpf），RTOS<LLM as CPU>，Linux<LLM as virt。主要原因在于，RTOS代码较为简单，应用场景简单，所以直接不用过于在于其生态，而像Linux，已经建立足够强大的生态，只能退而控制Linux决策，而不是放弃Linux。
 
-
+1. rust 作为 LLM 开发 首选语言
+2. rust+c 作为内核开发首选语言
 
 目前验证的配置（QEMU）：
 HYPER   KERNEL 	USER
