@@ -4,9 +4,8 @@
 This is an operating system that is highly scalable, minimalist, and can be quickly commercialized for deployment(这是一个可扩展性极强，极简，可快速商业化部署的操作系统)
 
 #### 软件架构
-软件架构说明
 
-构建系统：
+##### 构建系统：
 1. cmake/make
 2. kconfig - generate-time
 3. dts - generate-time
@@ -14,10 +13,10 @@ This is an operating system that is highly scalable, minimalist, and can be quic
 5. execute shell script
 6. uboot/atf .etc
 
-基础设施：
+##### 基础设施：
 引导代码和常用库的正常编译和运行
 
-OS架构：
+##### OS架构：
 该内核可以放在任意一级作为管理器，包括：
 1. monitor - secureOS
 2. hypervisor - manage VMs
@@ -42,7 +41,7 @@ Newlk别名学徒（apprentice），意为在学习中成长的内核
 Newlk可以与UML(User Mode Linux)/LKL(Linux Kernel Library)/libos...进行合作，作为linux兼容层的一种解决方案；同时，也可以引入了Linux的一些库，包括锁以及基本数据结构，维测库，做成可以迁移的库
 也可以参考embox方案
 
-AIOS方案：
+##### AIOS方案：
 以LLM作为内核，newlk作为LLM实现，newlk可以分布在多核，异构核，多主机，彼此互联，并以事务性调度算法为纽带，部署事务性任务，事务性任务好处在于对于共享对象的共识性达成较为简单，这有利于共识性的组合，同时提高LLM互联效率，毕竟共享数据是最为便捷的通信手段，并且LLM做出的策略可以很容易转换为事务性任务。事务性调度劣势在于，必须保证有一次事务都是最优决策，否则系统将混乱不堪，原有的调度决策有足够的理论算法支撑，而LLM带来的只有训练后的经验。
 
 LLM可以收集数据，制定决策，反馈决策，这首先对于具备大量启发式参数配置的OS，例如Linux，可以极大的降低调优成本，其次，不同业务场景下，对于调度/内存/IO/设备等策略都有所不同，例如硬实时/软实时/非实时业务等，在未来场景中，这些场景的交互和混合是不可避免的，那么势必造成，在不同场景应用的策略与理想情况出现较大偏差，例如，硬实时的rt算法与软实时的cfs算法，在二者任务相互依赖时，rt算法中任务的wcet，与cfs算法任务的vtime(优先级提升)都不可测定，并且，随着系统运行时间推移，这种相互依赖产生的偏差会累积，原本调优的参数都会老化和失效。而事务性调度完全依赖于LLM归纳的决策集，不拘泥经典调度算法的框架，可以根据输入做出最优决策。并且，事务性的任务非常易于数据同步（可组合性）。面对突发场景，事务性任务也非常易于恢复，因为划为一个事务的多个任务，会持有一个事务状态。
@@ -52,29 +51,44 @@ LLM全局环境可以采用物理环境或是虚拟环境，CPU或是虚拟机vi
 1. rust 作为 LLM 开发 首选语言
 2. rust+c 作为内核开发首选语言
 
-目前验证的配置（QEMU）：
+##### 目前验证的配置（QEMU）：
+```c
 HYPER   KERNEL 	USER
 32	32	32
 	64	64
 	64	32
+```
 
 #### 安装教程
-	make help
-KCONFIG Examples:
-	make DEFAULT_PROJECT=qemu-virt-arm64-test defconfig
-	make DEFAULT_PROJECT=qemu-virt-arm64-test genconfig
-	make DEFAULT_PROJECT=qemu-virt-arm64-test menuconfig
-	make DEFAULT_PROJECT=qemu-virt-arm64-test dtbs
-命令行
-KERNEL
-1.  ./scripts/do-qemuarm    :Cortex-A32
-2.  ./scripts/do-qemuarm -3 :Cortex-M
-3.  ./scripts/do-qemuarm -6 :Cortex-A64
-4.  ./scripts/do-qemuarm -r :Cortex-R32
-HYPER
-1. -v
 
-配置
+##### 安装环境以及依赖：
+1. Ubuntu20.04/22.04
+2. 安装通用库：sudo apt install git binutils build-essential libssl-dev libncurses-dev libconfuse-dev libtool f2fs-tools device-tree-compiler python3 python3-dev python3-pip python-is-python3
+3. 安装py库：pip3 install --user ply jinja2 Kconfiglib
+4. 安装QEMU：sudo apt install qemu-system-arm qemu-system-aarch64 *qemu-system-arm for cortex-r52 需要更新QEMU代码，源码编译*
+5. 安装交叉编译器(arm32)：sudo apt install gcc-arm-none-eabi 或是 [gcc-arm-none-eabi](https://developer.arm.com/downloads/-/gnu-a)
+6. 安装交叉编译器(arm64)：[aarch64-none-elf](https://developer.arm.com/downloads/-/gnu-a)
+
+##### 获取make帮助：
+1. make help <br>
+2. 针对Kconfig的配置样例: <br>
+2.1 make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test defconfig <br>
+2.2 make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test genconfig <br>
+2.3 make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test menuconfig <br>
+2.4 make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test dtbs <br>
+
+##### 编译命令行汇总 <br>
+KERNEL <br>
+1.  ./scripts/do-qemuarm    :Cortex-A32 <br>
+2.  ./scripts/do-qemuarm -3 :Cortex-M <br>
+3.  ./scripts/do-qemuarm -6 :Cortex-A64 <br>
+4.  ./scripts/do-qemuarm -r :Cortex-R32 <br>
+
+HYPER <br>
+1. ./scripts/do-qemuarm -v    :Cortex-A32 <br>
+2. ./scripts/do-qemuarm -r -v :Cortex-R32 <br>
+
+##### Kconfig/Makefile配置汇总
 1. make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test menuconfig
 2. env_inc.mk, WITH_SUPER_MODE := true
 3. env_inc.mk, WITH_HYPER_MODE := true
@@ -83,40 +97,60 @@ HYPER
 6. WITH_AUX_HYPER_MODE := true
 
 
-HYPER - OK
-32
-命令行KERNEL 1|4，HYPER 1
-配置1 DEFAULT_PROJECT=qemu-virt-arm32[arm32-r52]; cortex-r 配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, MPU ARMV8R, ARM MPU Support），并且qemu需要改写成支持cortex-r52
-配置3
+##### HYPER案例 - 验证OK 
+支持32位 <br>
+1. 选择命令行KERNEL 1|4，HYPER 1|2 <br>
+2. 选择配置1 DEFAULT_PROJECT=qemu-virt-arm32[arm32-r52]; cortex-r 配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, MPU ARMV8R, ARM MPU Support），并且qemu需要改写成支持cortex-r52 <br>
+3. 选择配置3 <br>
 
-AUX-HYPER - OK
-32
-命令行KERNEL 2
-配置1 DEFAULT_PROJECT=qemu-virt-arm32, 配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, ARM MPU Support）
-配置6
+##### AUX-HYPER案例 - 验证OK 
+支持32位 <br>
+1. 选择命令行KERNEL 2 <br>
+2. 选择配置1 DEFAULT_PROJECT=qemu-virt-arm32, 配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, ARM MPU Support） <br>
+3. 选择配置6 <br>
 
-KERNEL 	USER - OK
-32	32
-命令行KERNEL 1|2|4
-配置1 DEFAULT_PROJECT=qemu-virt-arm32
-配置2/4/5
-cortex-m 默认配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for APP, MPU ARM, ARM MPU Support）
-当不使用MPU时，需要在arch/arm/rules.mk中配置ENABLE_MPU:=false
-cortex-m目前仅支持KERNEL32，使用配置2
-cortex-r目前仅验证r52，且必须配置mpu使能
-默认配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for APP, MPU ARM, MPU ARMV8R, ARM MPU Support）
-cortex-r目前仅支持KERNEL32，使用配置2
+##### KERNEL-USER案例1 - 验证OK 
+支持K32-U32位 <br>
+1. 选择命令行KERNEL 1|2|4 <br>
+2. 选择配置1 DEFAULT_PROJECT=qemu-virt-arm32 <br>
+3. 选择配置2/4/5 <br>
+3.1 cortex-m 默认配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for APP, MPU ARM, ARM MPU Support）<br>
+3.2 当不使用MPU时，需要在arch/arm/rules.mk中配置ENABLE_MPU:=false <br>
+3.3 cortex-m目前仅支持KERNEL32，使用配置2 <br>
+4. coretx-r 默认配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for APP, MPU ARM, MPU ARMV8R, ARM MPU Support） <br>
+4.1 cortex-r目前仅支持KERNEL32，使用配置2 <br>
+4.2 cortex-r目前仅验证r52，且必须配置mpu使能 <br>
 
-64	64 - OK
-命令行KERNEL 3
-配置1 DEFAULT_PROJECT=qemu-virt-arm64
-配置2/4
+##### KERNEL-USER案例2 - 验证OK
+支持K64-U64位
+1. 选择命令行KERNEL 3 <br>
+2. 选择配置1 DEFAULT_PROJECT=qemu-virt-arm64 <br>
+3. 选择配置2/4 <br>
 
-64	32 - OK
-命令行KERNEL 3
-配置1 DEFAULT_PROJECT=qemu-virt-arm64
-配置2/4/5
+##### KERNEL-USER案例3 - 验证OK 
+支持K64-U32位
+1. 选择命令行KERNEL 3 <br>
+2. 选择配置1 DEFAULT_PROJECT=qemu-virt-arm64 <br>
+3. 选择配置2/4/5 <br>
 
+##### 内核调试
+gdb安装：sudo apt install gdb-multiarch <br>
+编译命令行汇总 <br>
+KERNEL <br>
+1.  ./scripts/do-qemuarm    -b :Cortex-A32 <br>
+2.  ./scripts/do-qemuarm -3 -b :Cortex-M <br>
+3.  ./scripts/do-qemuarm -6 -b :Cortex-A64 <br>
+4.  ./scripts/do-qemuarm -r -b :Cortex-R32 <br>
+
+HYPER <br>
+1. ./scripts/do-qemuarm -v -b    :Cortex-A32 <br>
+2. ./scripts/do-qemuarm -r -v -b :Cortex-R32 <br>
+
+##### 调试命令行汇总
+1. ./scripts/do-qemuarm-d3  :Cortex-M, Cortex-A32 <br>
+2. ./scripts/do-qemuarm-d6  :Cortex-A64 <br>
+3. ./scripts/do-qemuarm-dr3 :Cortex-R32 <br>
+   
 #### 使用说明
 
 1. 希望增加更多POSIX支持
