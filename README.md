@@ -135,7 +135,7 @@ HYPER <br>
 
 ##### 内核调试
 gdb安装：sudo apt install gdb-multiarch <br>
-编译命令行汇总 <br>
+##### 编译命令行汇总 <br>
 KERNEL <br>
 1.  ./scripts/do-qemuarm    -b :Cortex-A32 <br>
 2.  ./scripts/do-qemuarm -3 -b :Cortex-M <br>
