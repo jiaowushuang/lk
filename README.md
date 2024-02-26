@@ -1,7 +1,7 @@
 # Newlk
 
 #### 介绍
-This is an operating system that is highly scalable, minimalist, and can be quickly commercialized for deployment(这是一个可扩展性极强，极简，可快速商业化部署的操作系统)
+这是一个可扩展性极强，极简，可快速商业化部署的操作系统。
 
 #### 软件架构
 
