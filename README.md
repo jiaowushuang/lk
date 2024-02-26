@@ -6,7 +6,7 @@ This is an operating system that is highly scalable, minimalist, and can be quic
 #### 软件架构
 
 ##### 构建系统：
-1. cmake/make
+1. make
 2. kconfig - generate-time
 3. dts - generate-time
 4. generate file, xml, header file, cmake/make file(kconfig)
@@ -70,6 +70,7 @@ HYPER   KERNEL 	USER
 6. 安装交叉编译器(arm64)：[aarch64-none-elf](https://developer.arm.com/downloads/-/gnu-a)
 
 ##### 获取make帮助：
+根据硬件平台，在一个终端窗口输入以下命令：
 1. make help <br>
 2. 针对Kconfig的配置样例: <br>
 2.1 make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test defconfig <br>
@@ -78,6 +79,7 @@ HYPER   KERNEL 	USER
 2.4 make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test dtbs <br>
 
 ##### 编译命令行汇总 <br>
+根据硬件平台，在一个终端窗口输入以下命令：<br>
 KERNEL <br>
 1.  ./scripts/do-qemuarm    :Cortex-A32 <br>
 2.  ./scripts/do-qemuarm -3 :Cortex-M <br>
@@ -89,53 +91,55 @@ HYPER <br>
 2. ./scripts/do-qemuarm -r -v :Cortex-R32 <br>
 
 ##### Kconfig/Makefile配置汇总
+根据硬件平台，在一个终端窗口输入以下命令： <br>
 1. make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test menuconfig
-2. env_inc.mk, WITH_SUPER_MODE := true
-3. env_inc.mk, WITH_HYPER_MODE := true
-4. USER_TASK_ENABLE := true
-5. USER_TASK_32BITS := true
-6. WITH_AUX_HYPER_MODE := true
+2. env_inc.mk文件中, 修改Make变量值, WITH_SUPER_MODE := true
+3. env_inc.mk文件中, 修改Make变量值, WITH_HYPER_MODE := true
+4. env_inc.mk文件中, 修改Make变量值, USER_TASK_ENABLE := true
+5. env_inc.mk文件中, 修改Make变量值, USER_TASK_32BITS := true
+6. env_inc.mk文件中, 修改Make变量值, WITH_AUX_HYPER_MODE := true
 
+> 注意!!! 所有验证需要按照案例的步骤执行
 
 ##### HYPER案例 - 验证OK 
 支持32位 <br>
-1. 选择命令行KERNEL 1|4，HYPER 1|2 <br>
-2. 选择配置1 DEFAULT_PROJECT=qemu-virt-arm32[arm32-r52]; cortex-r 配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, MPU ARMV8R, ARM MPU Support），并且qemu需要改写成支持cortex-r52 <br>
-3. 选择配置3 <br>
+1. 选择Kconfig/Makefile配置汇总1, 即*DEFAULT_PROJECT=qemu-virt-arm32[arm32-r52]*, 其中如果是cortex-a，不需要特别设置Kconfig；如果硬件平台是cortex-r，需要配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, MPU ARMV8R, ARM MPU Support），并且qemu需要改写成支持cortex-r52 <br>
+2. 选择Kconfig/Makefile配置汇总3, 即 *WITH_HYPER_MODE := true* <br>
+3. 选择编译命令行汇总 HYPER 1|2, 即根据硬件平台选择 *./scripts/do-qemuarm -v* 或 *./scripts/do-qemuarm -r -v* <br>
 
 ##### AUX-HYPER案例 - 验证OK 
 支持32位 <br>
-1. 选择命令行KERNEL 2 <br>
-2. 选择配置1 DEFAULT_PROJECT=qemu-virt-arm32, 配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, ARM MPU Support） <br>
-3. 选择配置6 <br>
+1. 选择Kconfig/Makefile配置汇总1, 即*DEFAULT_PROJECT=qemu-virt-arm32*, 配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, ARM MPU Support） <br>
+2. 选择Kconfig/Makefile配置汇总6, 即 *WITH_AUX_HYPER_MODE := true* <br>
+3. 选择编译命令行汇总 KERNEL 2, 即 *./scripts/do-qemuarm -3* <br>
 
 ##### KERNEL-USER案例1 - 验证OK 
 支持K32-U32位 <br>
-1. 选择命令行KERNEL 1|2|4 <br>
-2. 选择配置1 DEFAULT_PROJECT=qemu-virt-arm32 <br>
-3. 选择配置2/4/5 <br>
-3.1 cortex-m 默认配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for APP, MPU ARM, ARM MPU Support）<br>
-3.2 当不使用MPU时，需要在arch/arm/rules.mk中配置ENABLE_MPU:=false <br>
-3.3 cortex-m目前仅支持KERNEL32，使用配置2 <br>
-4. coretx-r 默认配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for APP, MPU ARM, MPU ARMV8R, ARM MPU Support） <br>
-4.1 cortex-r目前仅支持KERNEL32，使用配置2 <br>
-4.2 cortex-r目前仅验证r52，且必须配置mpu使能 <br>
+1. 选择Kconfig/Makefile配置汇总1, 即*DEFAULT_PROJECT=qemu-virt-arm32* <br>
+2. 如果是cortex-m 默认需要配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for APP, MPU ARM, ARM MPU Support）<br>
+2.1 当不使用MPU时, 需要在arch/arm/rules.mk中配置 *ENABLE_MPU:=false* <br>
+2.2 cortex-m目前仅支持KERNEL32, 使用配置2+4+5, 即*WITH_SUPER_MODE := true;USER_TASK_ENABLE := true;USER_TASK_32BITS := true* <br>
+3. 如果是coretx-r 默认需要配置mpu使能 Kconfig（partition number, multi-partition enable, multi-partition enable for APP, MPU ARM, MPU ARMV8R, ARM MPU Support） <br>
+3.1 cortex-r目前仅支持KERNEL32, 使用配置2+4+5, 即*WITH_SUPER_MODE := true;USER_TASK_ENABLE := true;USER_TASK_32BITS := true* <br>
+3.2 cortex-r目前仅验证r52, 且必须配置mpu使能 <br>
+4. 选择编译命令行汇总 KERNEL 1|2|4, 即根据硬件平台选择 *./scripts/do-qemuarm, ./scripts/do-qemuarm -3, ./scripts/do-qemuarm -r* <br>
 
 ##### KERNEL-USER案例2 - 验证OK
 支持K64-U64位
-1. 选择命令行KERNEL 3 <br>
-2. 选择配置1 DEFAULT_PROJECT=qemu-virt-arm64 <br>
-3. 选择配置2/4 <br>
+1. 选择Kconfig/Makefile配置汇总1, 即*DEFAULT_PROJECT=qemu-virt-arm64* <br>
+2. 选择Kconfig/Makefile配置汇总2+4, 即*WITH_SUPER_MODE := true;USER_TASK_ENABLE := true* <br>
+3. 选择编译命令行汇总KERNEL 3, 即 *./scripts/do-qemuarm -6* <br>
 
 ##### KERNEL-USER案例3 - 验证OK 
 支持K64-U32位
-1. 选择命令行KERNEL 3 <br>
-2. 选择配置1 DEFAULT_PROJECT=qemu-virt-arm64 <br>
-3. 选择配置2/4/5 <br>
+1. 选择Kconfig/Makefile配置汇总1, *DEFAULT_PROJECT=qemu-virt-arm64* <br>
+2. 选择Kconfig/Makefile配置汇总2+4+5, 即*WITH_SUPER_MODE := true;USER_TASK_ENABLE := true;USER_TASK_32BITS := true* <br>
+3. 选择编译命令行汇总KERNEL 3, 即 *./scripts/do-qemuarm -6* <br>
 
 ##### 内核调试
 gdb安装：sudo apt install gdb-multiarch <br>
 ##### 编译命令行汇总 <br>
+根据硬件平台，在一个终端窗口输入以下命令：<br>
 KERNEL <br>
 1.  ./scripts/do-qemuarm    -b :Cortex-A32 <br>
 2.  ./scripts/do-qemuarm -3 -b :Cortex-M <br>
@@ -147,6 +151,7 @@ HYPER <br>
 2. ./scripts/do-qemuarm -r -v -b :Cortex-R32 <br>
 
 ##### 调试命令行汇总
+根据硬件平台，在另一个终端窗口输入以下命令：<br>
 1. ./scripts/do-qemuarm-d3  :Cortex-M, Cortex-A32 <br>
 2. ./scripts/do-qemuarm-d6  :Cortex-A64 <br>
 3. ./scripts/do-qemuarm-dr3 :Cortex-R32 <br>
