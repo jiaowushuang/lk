@@ -23,6 +23,7 @@
 3. superviser - manage APPs
 4. administrator - a plugin for other OSs, and manage it
 在任意层上，都可以使用某个Newlk来执行管理器的功能
+> 目前hypervisor和superviser已实现，administrator在筹备中
 
 可以复用相同的Newlk代码以减少存储，但不代表只要一份代码，而是多份Newlk的副本
 所以，必不可少的两个问题需要考虑：
