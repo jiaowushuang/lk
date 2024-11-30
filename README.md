@@ -63,45 +63,57 @@ Enabled: We can modify the env_inc.mk file to configure different managers.
 #### Install
 
 ##### environment and dependencies
+```
 1. Ubuntu20.04/22.04
 2. sudo apt install git binutils build-essential libssl-dev libncurses-dev libconfuse-dev libtool f2fs-tools device-tree-compiler python3 python3-dev python3-pip python-is-python3 gdb-multiarch
 3. pip3 install --user ply jinja2 Kconfiglib
 4. sudo apt install qemu-system-arm qemu-system-aarch64
 5. qemu-system-arm for cortex-r52: Download QEMU(v8.2.0) source code and compilation, r52 support patch at 'external/qemu-cr52/cortex-r52-support.patch'
 6. sudo apt install gcc-arm-none-eabi or [gcc-arm-none-eabi](https://developer.arm.com/downloads/-/gnu-a) and [aarch64-none-elf](https://developer.arm.com/downloads/-/gnu-a)
+```
 
 ##### make with configuartion
 We can execute `make help` to get all supported make commands.
 
 Such as:
+```
 1. make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test defconfig
 2. make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test genconfig
 3. make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test menuconfig
 4. make DEFAULT_PROJECT=qemu-virt-arm32[arm64|arm32-r52]-test dtbs
+```
 
 ##### compile and run
 
 Superviser
+```
 1.  ./scripts/do-qemuarm    :Cortex-A32
 2.  ./scripts/do-qemuarm -3 :Cortex-M
 3.  ./scripts/do-qemuarm -6 :Cortex-A64
 4.  ./scripts/do-qemuarm -r :Cortex-R32
+```
 
 Hypervisor
+```
 1. ./scripts/do-qemuarm -v    :Cortex-A32
 2. ./scripts/do-qemuarm -r -v :Cortex-R32
+```
 
 ##### steps
 
 ##### Hypervisor
-```
+
 For arm32-r52,
+```
 1. make DEFAULT_PROJECT=qemu-virt-arm32-r52-test defconfig
 1.1 make DEFAULT_PROJECT=qemu-virt-arm32-r52-test menuconfig
 1.2 Set True: partition number, multi-partition enable, multi-partition enable for RTOS, MPU ARM, MPU ARMV8R, ARM MPU Support
 2. Set True: WITH_HYPER_MODE
 3. ./scripts/do-qemuarm -r -v
+```
+
 For arm32-a,
+```
 1. make DEFAULT_PROJECT=qemu-virt-arm32-test defconfig
 2. Set True: WITH_HYPER_MODE
 3. ./scripts/do-qemuarm -v
@@ -148,16 +160,23 @@ For cortex-m,
 ##### debug and run
 
 Superviser
+```
 1.  ./scripts/do-qemuarm    -b :Cortex-A32 <br>
 2.  ./scripts/do-qemuarm -3 -b :Cortex-M <br>
 3.  ./scripts/do-qemuarm -6 -b :Cortex-A64 <br>
 4.  ./scripts/do-qemuarm -r -b :Cortex-R32 <br>
+```
 
 Hypervisor
+```
 1. ./scripts/do-qemuarm -v -b    :Cortex-A32 <br>
 2. ./scripts/do-qemuarm -r -v -b :Cortex-R32 <br>
+```
 
 run
+```
 1. ./scripts/do-qemuarm-d3  :Cortex-M, Cortex-A32 <br>
 2. ./scripts/do-qemuarm-d6  :Cortex-A64 <br>
 3. ./scripts/do-qemuarm-dr3 :Cortex-R32 <br>
+```
+
